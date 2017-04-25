@@ -1,7 +1,6 @@
 use std::collections::HashSet;
-use std::iter::Map;
 
-#[derive(Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Hash, Eq, PartialEq, PartialOrd)]
 struct Coord {
     i: usize,
     j: usize
@@ -15,7 +14,7 @@ struct SudokuCell {
 
 impl SudokuCell {
     fn new(position: Coord) -> SudokuCell {
-        let neighbors = SudokuCell::generateAllNeighbors(&position);
+        let neighbors = SudokuCell::generate_all_neighbors(&position);
 
         SudokuCell {
             value: 0,
@@ -24,7 +23,7 @@ impl SudokuCell {
         }
     }
 
-    fn generateAllNeighbors(position: &Coord) -> Vec<Coord> {
+    fn generate_all_neighbors(position: &Coord) -> Vec<Coord> {
         let mut neighbors = HashSet::new();
 
         for index in 0..SIZE {
@@ -32,11 +31,11 @@ impl SudokuCell {
             neighbors.insert(Coord{i: position.i, j: index});
         }
 
-        let iFloor = (position.i / THIRD) * THIRD;
-        let jFloor = (position.j / THIRD) * THIRD;
+        let i_floor = (position.i / THIRD) * THIRD;
+        let j_floor = (position.j / THIRD) * THIRD;
 
-        for i in iFloor..(iFloor + THIRD) {
-            for j in jFloor..(jFloor + THIRD) {
+        for i in i_floor..(i_floor + THIRD) {
+            for j in j_floor..(j_floor + THIRD) {
                 neighbors.insert(Coord{i: i, j: j});
             }
         }
@@ -62,11 +61,7 @@ fn test_index_to_coord (){
    assert!(index_to_coord(80) == Coord{i: 8, j: 8});
 }
 
-fn coord_to_index(coord: Coord) -> usize {
-    return coord.i * SIZE + coord.j;
-}
-
-fn coord_ref_to_index(coord: &Coord) -> usize {
+fn coord_to_index(coord: &Coord) -> usize {
     return coord.i * SIZE + coord.j;
 }
 
@@ -113,21 +108,16 @@ impl SudokuBoard {
         }
     }
 
-    fn markCell(&mut self) {
-        let cells = self.cells.as_mut_slice();
-        let (head, tails) = cells.split_at_mut(60);
-        let mut cell = head.last_mut().unwrap();
-        cell.value = 1;
+    fn mark_cell(&mut self, coord: &Coord, value: u64) {
+        let index = coord_to_index(coord);
+        let cell = self.cells.get_mut(index).unwrap();
+        cell.value = value;
+    }
 
-        for n in cell.neighbors {
-            let neighbor = cells.get_mut(coord_to_index(n));
-            match neighbor {
-                Some(n) => n.value = 7,
-                None => println!("Cannot divide by 0")
-            }
-        }
-
-
+    fn neighbors(&self, coord: &Coord) -> Vec<Coord> {
+        let index = coord_to_index(coord);
+        let ref cell = self.cells.get(index).unwrap();
+        cell.neighbors.clone()
     }
 }
 
@@ -135,6 +125,12 @@ impl SudokuBoard {
 
 fn main() {
     let mut board = SudokuBoard::new();
-    board.markCell();
+    let ref coord = Coord{i: 6, j: 6};
+    let neighbors = board.neighbors(coord);
+
+    for ref n in neighbors {
+        board.mark_cell(n, 1);
+    }
+    board.mark_cell(coord, 7);
     board.print();
 }
