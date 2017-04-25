@@ -1,4 +1,7 @@
+extern crate rand;
+
 use std::collections::HashSet;
+use rand::{thread_rng, Rng};
 
 #[derive(Clone, Hash, Eq, PartialEq, PartialOrd)]
 struct Coord {
@@ -72,7 +75,8 @@ fn test_coord_to_index (){
 }
 
 struct SudokuBoard {
-   cells: Vec<SudokuCell>
+   cells: Vec<SudokuCell>,
+   valid_values: HashSet<u64>
 }
 
 impl SudokuBoard {
@@ -82,7 +86,36 @@ impl SudokuBoard {
             cells.push(SudokuCell::new(index_to_coord(index)));
         }
 
-        SudokuBoard{ cells: cells}
+        let valid_values : HashSet<u64> = vec!(1, 2, 3, 4, 5, 6, 7, 8, 9).into_iter().collect();
+
+        SudokuBoard{ cells: cells, valid_values: valid_values}
+    }
+
+    fn fill(&mut self) {
+        self.doFill(0);
+    }
+
+    fn doFill(&mut self, index: usize) -> bool {
+        let ref cell_pos = index_to_coord(index);
+        let neighbor_values = self.neighbor_values(cell_pos);
+
+        // get remaining values and shuffle them
+        let mut remaining_values: Vec<u64> = self.valid_values
+                    .difference(&neighbor_values).cloned().collect();
+        let mut rng = rand::thread_rng();
+        rng.shuffle(&mut remaining_values);
+
+        // try the remaining values
+        for v in remaining_values {
+            self.mark_cell(cell_pos, v);
+
+            if index == FULL_SIZE - 1 || self.doFill(index + 1) {
+                return true;
+            }
+        }
+
+        self.mark_cell(cell_pos, 0);
+        return false;
     }
 
     fn print(&self) {
@@ -119,18 +152,23 @@ impl SudokuBoard {
         let ref cell = self.cells.get(index).unwrap();
         cell.neighbors.clone()
     }
+
+    fn neighbor_values(&self, coord: &Coord) -> HashSet<u64> {
+        let mut values = HashSet::new();
+
+        for ref coord in self.neighbors(coord) {
+            let ref cell = self.cells.get(coord_to_index(coord)).unwrap();
+            values.insert(cell.value);
+        }
+
+        return values;
+    }
 }
 
 
 
 fn main() {
     let mut board = SudokuBoard::new();
-    let ref coord = Coord{i: 6, j: 6};
-    let neighbors = board.neighbors(coord);
-
-    for ref n in neighbors {
-        board.mark_cell(n, 1);
-    }
-    board.mark_cell(coord, 7);
+    board.fill();
     board.print();
 }
