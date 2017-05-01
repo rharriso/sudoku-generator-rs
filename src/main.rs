@@ -48,14 +48,15 @@ impl SudokuCell {
 
     fn generate_all_neighbors(position: &Coord) -> Vec<Coord> {
         let mut neighbors = HashSet::new();
+        let &Coord{ i: pos_i, j: pos_j } = position;
 
         for index in 0..SIZE_SQAURE{
-            neighbors.insert(Coord{i: index, j: position.j});
-            neighbors.insert(Coord{i: position.i, j: index});
+            neighbors.insert(Coord{i: index, j: pos_j});
+            neighbors.insert(Coord{i: pos_i, j: index});
         }
 
-        let i_floor = (position.i / SIZE) * SIZE;
-        let j_floor = (position.j / SIZE) * SIZE;
+        let i_floor = (pos_i / SIZE) * SIZE;
+        let j_floor = (pos_j / SIZE) * SIZE;
 
         for i in i_floor..(i_floor + SIZE) {
             for j in j_floor..(j_floor + SIZE) {
