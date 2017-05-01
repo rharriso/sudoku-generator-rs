@@ -3,26 +3,34 @@ extern crate rand;
 use std::collections::HashSet;
 use rand::{Rng};
 
-
 const SIZE: usize = 3;
 const SIZE_SQAURE: usize = SIZE * SIZE;
 const SIZE_SQUARE_64: u64 = SIZE_SQAURE as u64;
 const SIZE_QUAD: usize = SIZE_SQAURE * SIZE_SQAURE;
 
 
+/// 2-d position
 #[derive(Clone, Hash, Eq, PartialEq, PartialOrd)]
 struct Coord {
     i: usize,
     j: usize
 }
 
+/// block in a sudokuboard
+///
 struct SudokuCell {
+    /// where on the board is this
     position: Coord,
-    value: u64,
-    neighbors: Vec<Coord>
-}
+    /// what value is stored here
+    value: u64, 
+    /// what coords are related to this cell
+    neighbors: Vec<Coord>}
 
 impl SudokuCell {
+    /// create a new cell,
+    /// position - where on the board
+    /// all_neighbors - if false optimizes for fill
+    ///
     fn new(position: Coord, all_neighbors: bool) -> SudokuCell {
         let neighbors = if all_neighbors {
             SudokuCell::generate_all_neighbors(&position)
