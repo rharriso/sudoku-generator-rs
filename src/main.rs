@@ -3,11 +3,25 @@ extern crate rand;
 use std::collections::HashSet;
 use rand::{Rng};
 
-const SIZE: usize = 3;
-const SIZE_SQAURE: usize = SIZE * SIZE;
-const SIZE_SQUARE_64: u64 = SIZE_SQAURE as u64;
-const SIZE_QUAD: usize = SIZE_SQAURE * SIZE_SQAURE;
+// how big is the board
+#[derive(Debug, Clone)]
+struct BoardConfig {
+    all_neighbors: bool,
+    size: usize,
+    size_square: usize,
+    size_quad: usize,
+}
 
+impl BoardConfig {
+    fn new(base_size: usize, all_neighbors: bool) -> BoardConfig {
+        return BoardConfig{
+            all_neighbors: all_neighbors,
+            size: base_size,
+            size_square: base_size.pow(2),
+            size_quad: base_size.pow(4),
+        };
+    }
+}
 
 /// 2-d position
 #[derive(Clone, Hash, Eq, PartialEq, PartialOrd)]
@@ -24,19 +38,20 @@ struct SudokuCell {
     /// what value is stored here
     value: u64, 
     /// what coords are related to this cell
-    neighbors: Vec<Coord>}
+    neighbors: Vec<Coord>
+}
 
 impl SudokuCell {
     /// create a new cell,
     /// position - where on the board
     /// all_neighbors - if false optimizes for fill
     ///
-    fn new(position: Coord, all_neighbors: bool) -> SudokuCell {
-        let neighbors = if all_neighbors {
-            SudokuCell::generate_all_neighbors(&position)
+    fn new(position: Coord, board_config: &BoardConfig) -> SudokuCell {
+        let neighbors = if board_config.all_neighbors {
+            SudokuCell::generate_all_neighbors(&position, board_config)
         }
         else {
-            SudokuCell::generate_optimal_neighbors(&position)
+            SudokuCell::generate_optimal_neighbors(&position, board_config)
         };
 
         SudokuCell {
@@ -46,20 +61,20 @@ impl SudokuCell {
         }
     }
 
-    fn generate_all_neighbors(position: &Coord) -> Vec<Coord> {
+    fn generate_all_neighbors(position: &Coord, board_config: &BoardConfig) -> Vec<Coord> {
         let mut neighbors = HashSet::new();
         let &Coord{ i: pos_i, j: pos_j } = position;
 
-        for index in 0..SIZE_SQAURE{
+        for index in 0..board_config.size_square{
             neighbors.insert(Coord{i: index, j: pos_j});
             neighbors.insert(Coord{i: pos_i, j: index});
         }
 
-        let i_floor = (pos_i / SIZE) * SIZE;
-        let j_floor = (pos_j / SIZE) * SIZE;
+        let i_floor = (pos_i / board_config.size) * board_config.size;
+        let j_floor = (pos_j / board_config.size) * board_config.size;
 
-        for i in i_floor..(i_floor + SIZE) {
-            for j in j_floor..(j_floor + SIZE) {
+        for i in i_floor..(i_floor + board_config.size) {
+            for j in j_floor..(j_floor + board_config.size) {
                 neighbors.insert(Coord{i: i, j: j});
             }
         }
@@ -67,7 +82,7 @@ impl SudokuCell {
         return neighbors.into_iter().collect();
     }
 
-    fn generate_optimal_neighbors(position: &Coord) -> Vec<Coord> {
+    fn generate_optimal_neighbors(position: &Coord, board_config: &BoardConfig) -> Vec<Coord> {
         let mut neighbors = HashSet::new();
 
         for index in 0..position.i {
@@ -78,12 +93,12 @@ impl SudokuCell {
             neighbors.insert(Coord{i: position.i, j: index});
         }
 
-        let i_floor = (position.i / SIZE) * SIZE;
-        let j_floor = (position.j / SIZE) * SIZE;
+        let i_floor = (position.i / board_config.size) * board_config.size;
+        let j_floor = (position.j / board_config.size) * board_config.size;
 
 
         for i in i_floor..position.i {
-            for j in j_floor..(j_floor + SIZE) {
+            for j in j_floor..(j_floor + board_config.size) {
                 if i < position.i || j < position.j {
                     neighbors.insert(Coord{i: i, j: j});
                 }
@@ -93,52 +108,53 @@ impl SudokuCell {
         
         return neighbors.into_iter().collect();
     }
-
 }
 
-fn index_to_coord(index: usize) -> Coord {
+fn index_to_coord(index: usize, board_config: &BoardConfig) -> Coord {
     Coord{
-        i: index / SIZE_SQAURE,
-        j: index % SIZE_SQAURE
+        i: index / board_config.size_square,
+        j: index % board_config.size_square
     }
 }
 
 #[test]
 fn test_index_to_coord (){
-   assert!(index_to_coord(0) == Coord{i: 0, j: 0});
-   assert!(index_to_coord(80) == Coord{i: 8, j: 8});
+   assert!(index_to_coord(0, BoardConfig::new(3, false)) == Coord{i: 0, j: 0}, );
+   assert!(index_to_coord(80, BoardConfig::new(3, false)) == Coord{i: 8, j: 8});
 }
 
-fn coord_to_index(coord: &Coord) -> usize {
-    return coord.i * SIZE_SQAURE + coord.j;
+fn coord_to_index(coord: &Coord, board_config: &BoardConfig) -> usize {
+    return coord.i * board_config.size_square + coord.j;
 }
 
 #[test]
 fn test_coord_to_index (){
-    assert!(coord_to_index(Coord{i: 0, j: 0}) == 0);
-    assert!(coord_to_index(Coord{i: 8, j: 8}) == 80);
+    assert!(coord_to_index(Coord{i: 0, j: 0}, BoardConfig::new(3, false)) == 0);
+    assert!(coord_to_index(Coord{i: 8, j: 8}, BoardConfig::new(3, false)) == 80);
 }
 
 struct SudokuBoard {
-   cells: Vec<SudokuCell>,
-   valid_values: HashSet<u64>
+    cells: Vec<SudokuCell>,
+    valid_values: HashSet<u64>,
+    board_config: BoardConfig,
 }
 
 impl SudokuBoard {
-    fn new(all_neighbors: bool) -> SudokuBoard {
+    fn new(board_config: BoardConfig) -> SudokuBoard {
         let mut cells = Vec::with_capacity(81);
 
-        for index in 0..SIZE_QUAD {
-            cells.push(SudokuCell::new(index_to_coord(index), all_neighbors));
+        for index in 0..board_config.size_quad {
+            let coord = index_to_coord(index, &board_config);
+            cells.push(SudokuCell::new(coord, &board_config));
         }
 
         let mut valid_values : HashSet<u64> = HashSet::new();
 
-        for n in 1u64..(SIZE_SQUARE_64 + 1) {
-            valid_values.insert(n);
+        for n in 1usize..(board_config.size_square + 1) {
+            valid_values.insert(n as u64);
         }
 
-        SudokuBoard{ cells: cells, valid_values: valid_values}
+        SudokuBoard{ cells: cells, valid_values: valid_values, board_config}
     }
 
     fn fill(&mut self) {
@@ -146,7 +162,7 @@ impl SudokuBoard {
     }
 
     fn do_fill(&mut self, index: usize) -> bool {
-        let ref cell_pos = index_to_coord(index);
+        let ref cell_pos = index_to_coord(index, &self.board_config);
         let neighbor_values = self.neighbor_values(cell_pos);
 
         // get remaining values and shuffle them
@@ -159,7 +175,7 @@ impl SudokuBoard {
         for v in remaining_values {
             self.mark_cell(cell_pos, v);
 
-            if index == SIZE_QUAD - 1 || self.do_fill(index + 1) {
+            if index == self.board_config.size_quad - 1 || self.do_fill(index + 1) {
                 return true;
             }
         }
@@ -177,14 +193,14 @@ impl SudokuBoard {
             }
             print!("{}  ", cell.value);
 
-            if (cell.position.j % SIZE) == (SIZE - 1) {
+            if (cell.position.j % self.board_config.size) == (self.board_config.size - 1) {
                 print ! ("| ");
 
             }
-            if cell.position.j == SIZE_SQAURE -1 {
+            if cell.position.j == self.board_config.size_square -1 {
                 print!("\n");
 
-                if cell.position.i % SIZE == SIZE - 1 {
+                if cell.position.i % self.board_config.size == self.board_config.size - 1 {
                     println!("-------------------------------------------");
                 }
             }
@@ -192,7 +208,7 @@ impl SudokuBoard {
     }
 
     fn clear(&mut self) {
-        for n in 0..SIZE_QUAD {
+        for n in 0..self.board_config.size_quad {
             self.mark_cell_pos(n, 0);
         }
     }
@@ -208,7 +224,7 @@ impl SudokuBoard {
     }
 
     fn mark_cell(&mut self, coord: &Coord, value: u64) {
-        let index = coord_to_index(coord);
+        let index = coord_to_index(coord, &self.board_config);
         self.mark_cell_pos(index, value);
     }
     
@@ -218,7 +234,7 @@ impl SudokuBoard {
     }
 
     fn neighbors(&self, coord: &Coord) -> Vec<Coord> {
-        let index = coord_to_index(coord);
+        let index = coord_to_index(coord, &self.board_config);
         let ref cell = self.cells.get(index).unwrap();
         cell.neighbors.clone()
     }
@@ -227,7 +243,7 @@ impl SudokuBoard {
         let mut values = HashSet::new();
 
         for ref coord in self.neighbors(coord) {
-            let ref cell = self.cells.get(coord_to_index(coord)).unwrap();
+            let ref cell = self.cells.get(coord_to_index(coord, &self.board_config)).unwrap();
             values.insert(cell.value);
         }
 
@@ -238,19 +254,21 @@ impl SudokuBoard {
 fn main() {
     let args: Vec<_> = std::env::args().collect();
     if args.len() < 2 {
-        println!("Usage: {} board_count [--all-neighbors]", args[0]);
+        println!("Usage: {} board_count board_size [--all-neighbors]", args[0]);
         return;
     }
 
     let board_count: usize = args[1].parse().unwrap();
+    let board_size: usize = args[2].parse().unwrap();
     let mut all_neighbors = false;
-    
-    if args.len() > 2 {
-        all_neighbors = args[2] == "--all-neighbors";
+
+    if args.len() > 3 {
+        all_neighbors = args[3] == "--all-neighbors";
     }
 
+    let board_config = BoardConfig::new(board_size, all_neighbors);
+    let mut board = SudokuBoard::new(board_config);
 
-    let mut board = SudokuBoard::new(all_neighbors);
     let mut result = "".to_string();
 
     if all_neighbors {
