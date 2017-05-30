@@ -1,4 +1,5 @@
 extern crate rand;
+extern crate time;
 
 use std::collections::HashSet;
 use rand::{Rng};
@@ -252,19 +253,23 @@ impl SudokuBoard {
 }
 
 fn main() {
-    let args: Vec<_> = std::env::args().collect();
+    let start = time::precise_time_ns();
+/*    let args: Vec<_> = std::env::args().collect();
     if args.len() < 2 {
         println!("Usage: {} board_count board_size [--all-neighbors]", args[0]);
         return;
-    }
+    }*/
 
-    let board_count: usize = args[1].parse().unwrap();
-    let board_size: usize = args[2].parse().unwrap();
+    //let board_count: usize = args[1].parse().unwrap();
+    //let board_size: usize = args[2].parse().unwrap();
+    let board_count = 10000;
+    let board_size = 3;
+
     let mut all_neighbors = false;
 
-    if args.len() > 3 {
+    /*if args.len() > 3 {
         all_neighbors = args[3] == "--all-neighbors";
-    }
+    }*/
 
     let board_config = BoardConfig::new(board_size, all_neighbors);
     let mut board = SudokuBoard::new(board_config);
@@ -284,5 +289,11 @@ fn main() {
         }
     }
 
-    println!("{}", result);
+    let duration = time::precise_time_ns() - start;
+    let seconds = duration as f64 / 1000000000f64;
+    println!("time: {} s", seconds);
+    println!("last board: {}", result.len());
+    println!("result size count: {}", board.serialize());
+    println!("board count {}", board_count);
+    println!("boards per second {}", board_count as f64 / seconds);
 }
