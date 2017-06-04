@@ -262,7 +262,7 @@ fn main() {
 
     //let board_count: usize = args[1].parse().unwrap();
     //let board_size: usize = args[2].parse().unwrap();
-    let board_count = 10000;
+    let board_count = 10;
     let board_size = 3;
 
     let mut all_neighbors = false;
@@ -292,8 +292,8 @@ fn main() {
     let duration = time::precise_time_ns() - start;
     let seconds = duration as f64 / 1000000000f64;
     println!("time: {} s", seconds);
-    println!("last board: {}", result.len());
-    println!("result size count: {}", board.serialize());
+    println!("last board: {}", board.serialize());
+    println!("result size count: {}", result.len());
     println!("board count {}", board_count);
     println!("boards per second {}", board_count as f64 / seconds);
 }
