@@ -37,7 +37,7 @@ struct SudokuCell {
     /// where on the board is this
     position: Coord,
     /// what value is stored here
-    value: u64, 
+    value: u64,
     /// what coords are related to this cell
     neighbors: Vec<Coord>
 }
@@ -106,7 +106,7 @@ impl SudokuCell {
 
             }
         }
-        
+
         return neighbors.into_iter().collect();
     }
 }
@@ -228,7 +228,7 @@ impl SudokuBoard {
         let index = coord_to_index(coord, &self.board_config);
         self.mark_cell_pos(index, value);
     }
-    
+
     fn mark_cell_pos(&mut self, index: usize, value: u64) {
         let cell = self.cells.get_mut(index).unwrap();
         cell.value = value;
