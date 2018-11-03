@@ -71,6 +71,7 @@ impl SudokuCell {
             neighbors.insert(Coord{i: pos_i, j: index});
         }
 
+        // find the top left block position
         let i_floor = (pos_i / board_config.size) * board_config.size;
         let j_floor = (pos_j / board_config.size) * board_config.size;
 
@@ -94,6 +95,7 @@ impl SudokuCell {
             neighbors.insert(Coord{i: position.i, j: index});
         }
 
+        // find the top left block position
         let i_floor = (position.i / board_config.size) * board_config.size;
         let j_floor = (position.j / board_config.size) * board_config.size;
 
@@ -254,22 +256,13 @@ impl SudokuBoard {
 
 fn main() {
     let start = time::precise_time_ns();
-/*    let args: Vec<_> = std::env::args().collect();
-    if args.len() < 2 {
-        println!("Usage: {} board_count board_size [--all-neighbors]", args[0]);
-        return;
-    }*/
+    let args: Vec<_> = std::env::args().collect();
 
-    //let board_count: usize = args[1].parse().unwrap();
     //let board_size: usize = args[2].parse().unwrap();
-    let board_count = 10;
     let board_size = 3;
 
-    let mut all_neighbors = false;
-
-    /*if args.len() > 3 {
-        all_neighbors = args[3] == "--all-neighbors";
-    }*/
+    let board_count: usize = if args.len() > 1 { args[1].parse().unwrap() } else { 10 };
+    let all_neighbors  = if args.len() > 2 {args[2] == "--all-neighbors"} else { false };
 
     let board_config = BoardConfig::new(board_size, all_neighbors);
     let mut board = SudokuBoard::new(board_config);
