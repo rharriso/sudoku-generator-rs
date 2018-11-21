@@ -1,6 +1,7 @@
-extern crate rand;
 use std::collections::HashSet;
-use sudoku_generator::rand::{Rng};
+
+extern crate rand;
+use self::rand::Rng;
 
 // how big is the board
 #[derive(Debug, Clone)]
@@ -32,8 +33,6 @@ struct Coord {
 /// block in a sudokuboard
 ///
 struct SudokuCell {
-    /// where on the board is this
-    position: Coord,
     /// what value is stored here
     value: u64,
     /// what coords are related to this cell
@@ -55,8 +54,7 @@ impl SudokuCell {
 
         SudokuCell {
             value: 0,
-            neighbors: neighbors,
-            position: position
+            neighbors: neighbors
         }
     }
 
@@ -183,12 +181,6 @@ impl SudokuBoard {
 
         self.mark_cell(cell_pos, 0);
         return false;
-    }
-
-    fn clear(&mut self) {
-        for n in 0..self.board_config.size_quad {
-            self.mark_cell_pos(n, 0);
-        }
     }
 
     pub fn serialize(&self) -> String {

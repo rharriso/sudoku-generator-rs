@@ -6,3 +6,11 @@ authors = ["Ross Harrison <rtharrison86@gmail.com>"]
 [dependencies]
 rand = "0.3"
 time = "0.1"
+
+[lib]
+name = "sudo_gen"
+path = "src/lib.rs"
+
+[[bin]]
+name = "runner"
+path = "src/bin.rs"
