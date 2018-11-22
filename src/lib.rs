@@ -3,6 +3,9 @@ use std::collections::HashSet;
 extern crate rand;
 use self::rand::Rng;
 
+extern crate wasm_bindgen;
+use self::wasm_bindgen::prelude::*;
+
 // how big is the board
 #[derive(Debug, Clone)]
 struct BoardConfig {
@@ -221,6 +224,7 @@ impl SudokuBoard {
     }
 }
 
+#[wasm_bindgen]
 pub fn generate_and_fill_boards(board_count: usize, board_size: usize, all_neighbors: bool) {
     for _ in 0..board_count {
         let board_config = BoardConfig::new(board_size, all_neighbors);

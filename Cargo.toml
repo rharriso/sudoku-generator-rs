@@ -6,8 +6,10 @@ authors = ["Ross Harrison <rtharrison86@gmail.com>"]
 [dependencies]
 rand = "0.3"
 time = "0.1"
+wasm-bindgen = "0.2.28"
 
 [lib]
+crate-type = ["cdylib"]
 name = "sudo_gen"
 path = "src/lib.rs"
 
