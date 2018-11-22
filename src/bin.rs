@@ -9,7 +9,7 @@ fn main() {
     //let board_size: usize = args[2].parse().unwrap();
     let board_size = 3;
 
-    let board_count: usize = if args.len() > 1 { args[1].parse().unwrap() } else { 10 };
+    let board_count: usize = if args.len() > 1 { args[1].parse().unwrap() } else { 1000 };
     let all_neighbors  = if args.len() > 2 {args[2] == "--all-neighbors"} else { false };
 
     lib::generate_and_fill_boards(board_count, board_size, all_neighbors);

@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 extern crate rand;
 use self::rand::Rng;
+use self::rand::os::OsRng;
 
 extern crate wasm_bindgen;
 use self::wasm_bindgen::prelude::*;
@@ -121,7 +122,7 @@ fn index_to_coord(index: usize, board_config: &BoardConfig) -> Coord {
 
 #[test]
 fn test_index_to_coord (){
-    assert!(index_to_coord(0, &BoardConfig::new(3, false)) == Coord{i: 0, j: 0}, );
+    assert!(index_to_coord(0, &BoardConfig::new(3, false)) == Coord{i: 0, j: 0});
     assert!(index_to_coord(80, &BoardConfig::new(3, false)) == Coord{i: 8, j: 8});
 }
 
@@ -139,6 +140,7 @@ pub struct SudokuBoard {
     cells: Vec<SudokuCell>,
     valid_values: HashSet<u64>,
     board_config: BoardConfig,
+    rng: OsRng
 }
 
 impl SudokuBoard {
@@ -156,7 +158,12 @@ impl SudokuBoard {
             valid_values.insert(n as u64);
         }
 
-        SudokuBoard{ cells: cells, valid_values: valid_values, board_config}
+        SudokuBoard{
+            cells: cells,
+            valid_values: valid_values,
+            board_config,
+            rng: OsRng::new().unwrap()
+        }
     }
 
     fn fill(&mut self) {
@@ -170,8 +177,7 @@ impl SudokuBoard {
         // get remaining values and shuffle them
         let mut remaining_values: Vec<u64> = self.valid_values
             .difference(&neighbor_values).cloned().collect();
-        let mut rng = rand::thread_rng();
-        rng.shuffle(&mut remaining_values);
+        self.rng.shuffle(&mut remaining_values);
 
         // try the remaining values
         for v in remaining_values {
