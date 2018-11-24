@@ -1,18 +1,37 @@
 [package]
-name = "sudoku-generator-rs"
+name = "sudoku-generator"
 version = "0.1.0"
 authors = ["Ross Harrison <rtharrison86@gmail.com>"]
 
 [dependencies]
-rand = "0.3"
+cfg-if="0.1"
 time = "0.1"
-wasm-bindgen = "0.2.28"
+wasm-bindgen = "0.2"
+
+# The `console_error_panic_hook` crate provides better debugging of panic    s by
+# logging them with `console.error`. This is great for development, but r    equires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great     for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.1", optional = true }
+
+# `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
+# compared to the default allocator's ~10K. It is slower than the default
+# allocator, however.
+#
+# Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm fo    r now.
+wee_alloc = { version = "0.4.2", optional = true }
+
+
+rand = { version = "0.6", features = ["wasm-bindgen"] }
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 name = "sudoku_generator"
 path = "src/sudoku_generator.rs"
 
 [[bin]]
 name = "runner"
 path = "src/bin.rs"
+
+[profile.release]
+opt-level = "s"

@@ -1,11 +1,23 @@
 use std::collections::HashSet;
 
+extern crate cfg_if;
 extern crate rand;
+extern crate wasm_bindgen;
+
+use self::cfg_if::cfg_if;
 use self::rand::Rng;
 use self::rand::os::OsRng;
-
-extern crate wasm_bindgen;
 use self::wasm_bindgen::prelude::*;
+
+cfg_if! {
+    // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+    // allocator.
+    if #[cfg(feature = "wee_alloc")] {
+        extern crate wee_alloc;
+        #[global_allocator]
+        static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+    }
+}
 
 // how big is the board
 #[derive(Debug, Clone)]

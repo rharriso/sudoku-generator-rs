@@ -9,3 +9,5 @@ target
 *.iml
 
 .idea
+/wasm-pack.log
+/pkg/
