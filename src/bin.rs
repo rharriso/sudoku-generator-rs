@@ -1,6 +1,6 @@
 extern crate time;
 
-mod lib;
+mod sudoku_generator;
 
 fn main() {
     let start = time::precise_time_ns();
@@ -12,7 +12,7 @@ fn main() {
     let board_count: usize = if args.len() > 1 { args[1].parse().unwrap() } else { 1000 };
     let all_neighbors  = if args.len() > 2 {args[2] == "--all-neighbors"} else { false };
 
-    lib::generate_and_fill_boards(board_count, board_size, all_neighbors);
+    sudoku_generator::generate_and_fill_boards(board_count, board_size, all_neighbors);
 
     let duration = time::precise_time_ns() - start;
     let seconds = duration as f64 / 1000000000f64;
