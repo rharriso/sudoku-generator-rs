@@ -45,7 +45,6 @@ struct Coord {
     i: usize,
     j: usize
 }
-
 /// block in a sudokuboard
 ///
 struct SudokuCell {
@@ -148,6 +147,7 @@ fn test_coord_to_index (){
     assert!(coord_to_index(&Coord{i: 8, j: 8}, &BoardConfig::new(3, false)) == 80);
 }
 
+#[wasm_bindgen]
 pub struct SudokuBoard {
     cells: Vec<SudokuCell>,
     valid_values: HashSet<u64>,
@@ -204,16 +204,6 @@ impl SudokuBoard {
         return false;
     }
 
-    pub fn serialize(&self) -> String {
-        let mut result = "".to_string();
-
-        for cell in &self.cells {
-            result = result + &cell.value.to_string() + &"|";
-        }
-
-        return result;
-    }
-
     fn mark_cell(&mut self, coord: &Coord, value: u64) {
         let index = coord_to_index(coord, &self.board_config);
         self.mark_cell_pos(index, value);
@@ -245,8 +235,23 @@ impl SudokuBoard {
 #[wasm_bindgen]
 pub fn generate_and_fill_boards(board_count: usize, board_size: usize, all_neighbors: bool) {
     for _ in 0..board_count {
-        let board_config = BoardConfig::new(board_size, all_neighbors);
-        let mut board = SudokuBoard::new(board_config);
-        board.fill();
+        generate_and_fill_board(board_size, all_neighbors);
     }
 }
+
+#[wasm_bindgen]
+pub fn generate_and_fill_board(board_size: usize, all_neighbors: bool) -> SudokuBoard {
+    let board_config = BoardConfig::new(board_size, all_neighbors);
+    let mut board = SudokuBoard::new(board_config);
+    board.fill();
+    return board;
+}
+
+
+#[wasm_bindgen]
+pub fn serializeBoard(board: &SudokuBoard) -> String {
+    return board.cells.iter()
+        .map(|cell| { cell.value.to_string() })
+        .collect::<Vec<_>>().join("|");
+}
+

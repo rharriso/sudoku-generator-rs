@@ -11,3 +11,4 @@ target
 .idea
 /wasm-pack.log
 /pkg/
+/.benchmark-tmp
