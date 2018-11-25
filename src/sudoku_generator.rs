@@ -156,8 +156,7 @@ fn test_coord_to_index (){
 pub struct SudokuBoard {
     cells: Vec<SudokuCell>,
     valid_values: HashSet<u64>,
-    board_config: BoardConfig,
-    rng: OsRng
+    board_config: BoardConfig
 }
 
 impl SudokuBoard {
@@ -178,8 +177,7 @@ impl SudokuBoard {
         SudokuBoard{
             cells: cells,
             valid_values: valid_values,
-            board_config,
-            rng: OsRng::new().unwrap()
+            board_config
         }
     }
 
@@ -194,7 +192,14 @@ impl SudokuBoard {
         // get remaining values and shuffle them
         let mut remaining_values: Vec<u64> = self.valid_values
             .difference(&neighbor_values).cloned().collect();
-        self.rng.shuffle(&mut remaining_values);
+
+        if cfg!(feature = "thread_rng") {
+            OsRng::new().unwrap().shuffle(&mut remaining_values);
+        }
+
+        if cfg!(not(feature = "thread_rng")) {
+            rand::thread_rng().shuffle(&mut remaining_values);
+        }
 
         // try the remaining values
         for v in remaining_values {
