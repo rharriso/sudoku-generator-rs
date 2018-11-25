@@ -26,7 +26,6 @@ wee_alloc = { version = "0.4.2", optional = true }
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.1", optional = true }
 
-
 [lib]
 crate-type = ["cdylib", "rlib"]
 name = "sudoku_generator"
@@ -36,5 +35,3 @@ path = "src/sudoku_generator.rs"
 name = "runner"
 path = "src/bin.rs"
 
-[target.'cfg(target_arch = "wasm32")']
-opt-level = "s"
