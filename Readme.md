@@ -1,13 +1,14 @@
-## Run Native Binary
+## Build and Run
 
 ```bash
-make run-native
+make run-native # native binary
+make run-js # load and run in node script
 ```
 
-## Run in Node
+## Benchmarking
 
-```
-make run-js
+```bash
+make benchmark # outputs results to stdout
 ```
 
 
