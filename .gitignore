@@ -12,3 +12,4 @@ target
 /wasm-pack.log
 /pkg/
 /.benchmark-tmp
+/benchmark-results

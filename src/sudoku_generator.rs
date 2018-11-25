@@ -2,12 +2,17 @@ use std::collections::HashSet;
 
 extern crate cfg_if;
 extern crate rand;
-extern crate wasm_bindgen;
 
 use self::cfg_if::cfg_if;
 use self::rand::Rng;
 use self::rand::os::OsRng;
-use self::wasm_bindgen::prelude::*;
+
+cfg_if! {
+    if #[cfg(target_arch = "wasm32")] {
+        extern crate wasm_bindgen;
+        use self::wasm_bindgen::prelude::*;
+    }
+}
 
 cfg_if! {
     // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -147,7 +152,7 @@ fn test_coord_to_index (){
     assert!(coord_to_index(&Coord{i: 8, j: 8}, &BoardConfig::new(3, false)) == 80);
 }
 
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct SudokuBoard {
     cells: Vec<SudokuCell>,
     valid_values: HashSet<u64>,
@@ -232,14 +237,14 @@ impl SudokuBoard {
     }
 }
 
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub fn generate_and_fill_boards(board_count: usize, board_size: usize, all_neighbors: bool) {
     for _ in 0..board_count {
         generate_and_fill_board(board_size, all_neighbors);
     }
 }
 
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub fn generate_and_fill_board(board_size: usize, all_neighbors: bool) -> SudokuBoard {
     let board_config = BoardConfig::new(board_size, all_neighbors);
     let mut board = SudokuBoard::new(board_config);
@@ -247,8 +252,7 @@ pub fn generate_and_fill_board(board_size: usize, all_neighbors: bool) -> Sudoku
     return board;
 }
 
-
-#[wasm_bindgen]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub fn serializeBoard(board: &SudokuBoard) -> String {
     return board.cells.iter()
         .map(|cell| { cell.value.to_string() })

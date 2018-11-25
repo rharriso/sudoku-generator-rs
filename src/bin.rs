@@ -6,11 +6,9 @@ fn main() {
     let start = time::precise_time_ns();
     let args: Vec<_> = std::env::args().collect();
 
-    //let board_size: usize = args[2].parse().unwrap();
-    let board_size = 3;
-
     let board_count: usize = if args.len() > 1 { args[1].parse().unwrap() } else { 1000 };
-    let all_neighbors  = if args.len() > 2 {args[2] == "--all-neighbors"} else { false };
+    let board_size: usize = if args.len() > 2 { args[2].parse().unwrap() } else { 3 };
+    let all_neighbors  = if args.len() > 3 {args[3] == "--all-neighbors"} else { false };
 
     sudoku_generator::generate_and_fill_boards(board_count, board_size, all_neighbors);
 
