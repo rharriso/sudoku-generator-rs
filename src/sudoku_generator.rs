@@ -194,11 +194,11 @@ impl SudokuBoard {
             .difference(&neighbor_values).cloned().collect();
 
         if cfg!(feature = "thread_rng") {
-            OsRng::new().unwrap().shuffle(&mut remaining_values);
+            rand::thread_rng().shuffle(&mut remaining_values);
         }
 
         if cfg!(not(feature = "thread_rng")) {
-            rand::thread_rng().shuffle(&mut remaining_values);
+            OsRng::new().unwrap().shuffle(&mut remaining_values);
         }
 
         // try the remaining values
